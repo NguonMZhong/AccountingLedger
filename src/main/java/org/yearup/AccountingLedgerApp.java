@@ -93,6 +93,7 @@ public class AccountingLedgerApp
                 {
                     System.out.println("Navigating to add your deposits...");
                     addDeposit();
+                    continue;
 
                 }
                 case "P" ->
@@ -110,7 +111,7 @@ public class AccountingLedgerApp
                     System.out.println("Exit");
                     return;
                 }
-                default -> System.out.println("Invalid option. Please try again.\n");
+                default -> System.out.println("Invalid option. Please try again.");
             }
         }
 
@@ -126,12 +127,6 @@ public class AccountingLedgerApp
             System.out.println();
             System.out.println("Please enter your deposit information.");
 
-            //LocalDate currentDate = LocalDate.now();
-            //LocalTime currentTime = LocalTime.now();
-
-            //System.out.print("Deposit date: " + currentDate);
-            //System.out.print("Deposit time: " + currentTime);
-
             LocalDate date = LocalDate.now();
             LocalTime time = LocalTime.now();
 
@@ -146,6 +141,9 @@ public class AccountingLedgerApp
 
             System.out.println("Enter amount: ");
             double amount = scanner.nextDouble();
+
+            // Consume the remaining newline character
+            scanner.nextLine();
 
            /* amount = 0;
             boolean validAmount = false;
@@ -178,48 +176,76 @@ public class AccountingLedgerApp
         } catch (IOException e)
         {
             System.out.println("Error writing file: " + e.getMessage());
+        } finally
+        {
+            System.out.println();
+            System.out.println("You have successfully enter your deposit information!");
+            System.out.println("Returning to Home Page...");
+            homeScreen();
         }
-
     }
+
     public void addPayment()
     {
-        System.out.println();
-        System.out.println("Enter your debit information.\n");
+        try
+        {
+            System.out.println();
+            System.out.println("Enter your debit information.\n");
 
-        //format card number as 0000-0000-0000-0000
-        System.out.print("Card Number: ");
-        String debitNumber = scanner.nextLine();
+            //format card number as 0000-0000-0000-0000
+            System.out.print("Card Number (0000-0000-0000-0000): ");
+            String cardNumber = scanner.nextLine();
 
-        if (!debitNumber.matches("\\d{4}-\\d{4}-\\d{4}-\\d{4}")) {
-            System.out.println("Invalid input. Please enter your card number in the format 0000-0000-0000-0000.");
-            return;
+            if (!cardNumber.matches("\\d{4}-\\d{4}-\\d{4}-\\d{4}"))
+            {
+                System.out.println("Invalid input. Please enter your card number in the format 0000-0000-0000-0000.");
+                return;
+            }
+
+            //format need to be in (MM/YY)
+            System.out.print("Expire Date (MM/YY):");
+            String expireDate = scanner.nextLine();
+
+            // check if input matches the required format (MM/YY)
+            if (!expireDate.matches("\\d{2}/\\d{2}"))
+            {
+                System.out.println("Invalid input. Please enter date in format MM/YY");
+                return; // exit the method if input is invalid
+            }
+
+            //only allow user to enter three number
+            System.out.print("CSV (3 digits): ");
+            String csv = scanner.nextLine();
+
+
+            // check if input is a 3-digit number
+            if (!csv.matches("\\d{3}"))
+            {
+                System.out.println("Invalid input. Please enter a 3-digit number");
+                return; // exit the method if input is invalid
+            }
+
+            //save this debit card to the csv file like addDeposit
+            //create Account Object
+
+            Debit debit = new Debit(cardNumber, expireDate, csv);
+
+            ArrayList<Debit> debitList = new ArrayList<>();
+            debitList.add(debit);
+
+            try (PrintWriter writer = new PrintWriter(new FileWriter("transactions.csv", true)))
+            {
+                writer.println(debit.toString());
+            } catch (IOException e)
+            {
+                System.out.println("Error writing file: " + e.getMessage());
+            }
+        } catch (Exception e)
+        {
+            System.out.println("An error occurred: " + e.getMessage());
         }
+    }
 
-        //format need to be in (MM/YY)
-        System.out.print("Expire Date:");
-        String expireDate = scanner.nextLine();
-
-        // check if input matches the required format (MM/YY)
-        if (!expireDate.matches("\\d{2}/\\d{2}")) {
-            System.out.println("Invalid input. Please enter date in format MM/YY");
-            return; // exit the method if input is invalid
-        }
-
-        //only allow user to enter three number
-        System.out.print("CSV (3 digits): ");
-        String csv = scanner.nextLine();
-
-
-        // check if input is a 3-digit number
-        if (!csv.matches("\\d{3}")) {
-            System.out.println("Invalid input. Please enter a 3-digit number");
-            return; // exit the method if input is invalid
-        }
-
-        //save this debit card to the csv file like addDeposit
-        //create Account Object
-
-}
 
     public void ledger()
     {
