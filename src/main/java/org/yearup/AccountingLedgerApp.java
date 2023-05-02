@@ -1,6 +1,7 @@
 package org.yearup;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -9,7 +10,7 @@ import java.util.Scanner;
 public class AccountingLedgerApp
 {
     //Global variables
-    final static public Scanner scanner = new Scanner(System.in);
+    static public Scanner scanner = new Scanner(System.in);
 
     //change this into ArrayList vs hashMap for easier access to data
     public void run()
@@ -96,7 +97,9 @@ public class AccountingLedgerApp
                 }
                 case "P" ->
                 {
-                    //prompt user for debit information and save to csv
+                    System.out.println("Navigating to make your payment...");
+                    addPayment();
+                    return;
                 }
                 case "L" ->
                 {
@@ -118,7 +121,7 @@ public class AccountingLedgerApp
 
         try
         {
-            Scanner input = new Scanner(System.in);
+            //Scanner input = new Scanner(System.in);
 
             System.out.println();
             System.out.println("Please enter your deposit information.");
@@ -178,6 +181,45 @@ public class AccountingLedgerApp
         }
 
     }
+    public void addPayment()
+    {
+        System.out.println();
+        System.out.println("Enter your debit information.\n");
+
+        //format card number as 0000-0000-0000-0000
+        System.out.print("Card Number: ");
+        String debitNumber = scanner.nextLine();
+
+        if (!debitNumber.matches("\\d{4}-\\d{4}-\\d{4}-\\d{4}")) {
+            System.out.println("Invalid input. Please enter your card number in the format 0000-0000-0000-0000.");
+            return;
+        }
+
+        //format need to be in (MM/YY)
+        System.out.print("Expire Date:");
+        String expireDate = scanner.nextLine();
+
+        // check if input matches the required format (MM/YY)
+        if (!expireDate.matches("\\d{2}/\\d{2}")) {
+            System.out.println("Invalid input. Please enter date in format MM/YY");
+            return; // exit the method if input is invalid
+        }
+
+        //only allow user to enter three number
+        System.out.print("CSV (3 digits): ");
+        String csv = scanner.nextLine();
+
+
+        // check if input is a 3-digit number
+        if (!csv.matches("\\d{3}")) {
+            System.out.println("Invalid input. Please enter a 3-digit number");
+            return; // exit the method if input is invalid
+        }
+
+        //save this debit card to the csv file like addDeposit
+        //create Account Object
+
+}
 
     public void ledger()
     {

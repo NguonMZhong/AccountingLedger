@@ -73,12 +73,16 @@ public class Account
     //This String represent of account object
     @Override
     public String toString() {
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm:ss");
         String formattedDate = date.format(dateFormatter);
         String formattedTime = time.format(timeFormatter);
         return String.format("%s|%s|%s|%s|%.2f", formattedDate, formattedTime, description, vendor, amount);
     }
+
+
+
+
 
 
 }
