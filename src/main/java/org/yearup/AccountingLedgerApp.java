@@ -1,9 +1,9 @@
 package org.yearup;
 
 import java.io.*;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -19,58 +19,52 @@ public class AccountingLedgerApp
 
     }
 
-    public static void loadTransactions()
-    //Print this to screen when starting project to showcase the current transactions
-    //need to read and write to the file
+    public static ArrayList<Account> loadTransactions()
     {
         //create the arrays
         ArrayList<Account> accounts = new ArrayList<>();
 
         //load the array
-        FileInputStream stream;
-        Scanner fileScanner = null;
+        //FileInputStream stream;
+        //Scanner fileScanner = null;
 
-        try
-        {
-            stream = new FileInputStream("transactions.csv");
-            fileScanner = new Scanner(stream);
-
-            fileScanner.nextLine();
-
-            while (fileScanner.hasNext())
-            {
-                String line = fileScanner.nextLine();
-
-                //create variable for each line
-                String[] columns = line.split("\\|");
-                LocalDate date = LocalDate.parse(columns[0]);
-                LocalTime time = LocalTime.parse(columns[1]);
-                String description = columns[2];
-                String vendor = columns[3];
-                double amount = Double.parseDouble(columns[4]);
-
-                //create account and add to arrayList
-                var account = new Account(date, time, description, vendor, amount);
-                accounts.add(account);
-
+        try (Scanner scanner = new Scanner(new File("transactions.csv"))) {
+            scanner.nextLine(); // skip header row
+            int lineNum = 2; // start at line 2 (since we skipped the header)
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.trim().isEmpty()) {
+                    continue; // skip empty lines
+                }
+                String[] fields = line.split("\\|");
+                if (fields.length != 5) {
+                    System.out.printf("Error: Line %d has %d fields instead of 5: %s\n", lineNum, fields.length, line);
+                    continue; // skip lines with wrong number of fields
+                }
+                try {
+                    LocalDate date = LocalDate.parse(fields[0]);
+                    LocalTime time = LocalTime.parse(fields[1]);
+                    String description = fields[2];
+                    String vendor = fields[3];
+                    double amount = Double.parseDouble(fields[4]);
+                    Account account = new Account(date, time, description, vendor, amount);
+                    accounts.add(account);
+                } catch (DateTimeParseException | NumberFormatException e) {
+                    System.out.println("Error: Line " + lineNum + " has invalid data: " + line);
+                }
+                lineNum++;
             }
-            //print loadAccount to console
-            for (var account : accounts)
-            {
-                System.out.println(account);
-            }
-        } catch (FileNotFoundException e)
-        {
-            System.out.println("Error: " + e);
-        } finally
-        {
-            //close the stream
-            if (fileScanner != null)
-            {
-                fileScanner.close();
-            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Error: Could not open file: " + e.getMessage());
         }
-        //return the array
+        /*// Print loaded accounts to console
+        for (var account : accounts) {
+            System.out.println(account);
+        }
+
+         */
+        return accounts;
+
 
     }
 
@@ -93,18 +87,17 @@ public class AccountingLedgerApp
                 {
                     System.out.println("Navigating to add your deposits...");
                     addDeposit();
-                    continue;
 
                 }
                 case "P" ->
                 {
                     System.out.println("Navigating to make your payment...");
                     addPayment();
-                    return;
                 }
                 case "L" ->
                 {
-                    //Display the ledger screen
+                    System.out.println("Displaying the ledger menu...");
+                    ledger();
                 }
                 case "X" ->
                 {
@@ -119,7 +112,6 @@ public class AccountingLedgerApp
 
     private void addDeposit()
     {
-
         try
         {
             //Scanner input = new Scanner(System.in);
@@ -139,18 +131,18 @@ public class AccountingLedgerApp
             System.out.print("Enter vendor: ");
             String vendor = scanner.nextLine();
 
-            System.out.println("Enter amount: ");
-            double amount = scanner.nextDouble();
-
             // Consume the remaining newline character
-            scanner.nextLine();
+            //scanner.nextLine();
 
-           /* amount = 0;
+            //log as negative number for payment
+
+            double amount = 0;
             boolean validAmount = false;
 
             while (!validAmount) {
-                System.out.println("Enter amount: ");
-                amount = input.nextDouble();
+                System.out.print("Enter amount: ");
+                amount = scanner.nextDouble();
+                scanner.nextLine();
 
                 if (amount <= 0) {
                     System.out.println("Amount is insufficient. Enter a number greater than 0.");
@@ -158,7 +150,7 @@ public class AccountingLedgerApp
                     validAmount = true;
                 }
             }
-            */
+
 
             //create Account Object
             var accounts = new Account(date, time, description, vendor, amount);
@@ -176,73 +168,92 @@ public class AccountingLedgerApp
         } catch (IOException e)
         {
             System.out.println("Error writing file: " + e.getMessage());
-        } finally
+        }
+        catch (Exception e)
+        {
+            System.out.println("An error occured: " + e.getMessage());
+        }
+
+        finally
         {
             System.out.println();
             System.out.println("You have successfully enter your deposit information!");
             System.out.println("Returning to Home Page...");
-            homeScreen();
         }
     }
 
     public void addPayment()
     {
+        boolean inputError = false;
+
         try
         {
+            //Scanner input = new Scanner(System.in);
+
             System.out.println();
-            System.out.println("Enter your debit information.\n");
+            System.out.println("Please enter your debit information.");
 
-            //format card number as 0000-0000-0000-0000
-            System.out.print("Card Number (0000-0000-0000-0000): ");
-            String cardNumber = scanner.nextLine();
+            LocalDate date = LocalDate.now();
+            LocalTime time = LocalTime.now();
 
-            if (!cardNumber.matches("\\d{4}-\\d{4}-\\d{4}-\\d{4}"))
-            {
-                System.out.println("Invalid input. Please enter your card number in the format 0000-0000-0000-0000.");
-                return;
+            System.out.println("Deposit date: " + date);
+            System.out.println("Deposit time: " + time);
+
+            System.out.print("Enter a description or reason for the debit: ");
+            String description = scanner.nextLine();
+
+            System.out.print("Enter vendor: ");
+            String vendor = scanner.nextLine();
+
+            // Consume the remaining newline character
+            //scanner.nextLine();
+
+            //log as negative number for payment
+
+            double amount = 0;
+            boolean validAmount = false;
+
+            while (!validAmount) {
+                System.out.println("Enter debit amount: ");
+                amount = scanner.nextDouble();
+                scanner.nextLine();
+
+                if (amount <= 0) {
+                    System.out.println("Amount is insufficient. Enter a number greater than 0.");
+                } else {
+                    validAmount = true;
+                }
             }
 
-            //format need to be in (MM/YY)
-            System.out.print("Expire Date (MM/YY):");
-            String expireDate = scanner.nextLine();
-
-            // check if input matches the required format (MM/YY)
-            if (!expireDate.matches("\\d{2}/\\d{2}"))
-            {
-                System.out.println("Invalid input. Please enter date in format MM/YY");
-                return; // exit the method if input is invalid
-            }
-
-            //only allow user to enter three number
-            System.out.print("CSV (3 digits): ");
-            String csv = scanner.nextLine();
+            amount = -amount;
 
 
-            // check if input is a 3-digit number
-            if (!csv.matches("\\d{3}"))
-            {
-                System.out.println("Invalid input. Please enter a 3-digit number");
-                return; // exit the method if input is invalid
-            }
-
-            //save this debit card to the csv file like addDeposit
             //create Account Object
+            var accounts = new Account(date, time, description, vendor, amount);
 
-            Debit debit = new Debit(cardNumber, expireDate, csv);
+            //Create ArrayList to hold Account objects
+            ArrayList<Account> accountList = new ArrayList<>();
 
-            ArrayList<Debit> debitList = new ArrayList<>();
-            debitList.add(debit);
+            accountList.add(accounts);
+
 
             try (PrintWriter writer = new PrintWriter(new FileWriter("transactions.csv", true)))
             {
-                writer.println(debit.toString());
-            } catch (IOException e)
-            {
-                System.out.println("Error writing file: " + e.getMessage());
+                writer.println(accounts.toString());
             }
-        } catch (Exception e)
+        } catch (IOException e)
+        {
+            System.out.println("Error writing file: " + e.getMessage());
+        }
+        catch (Exception e)
         {
             System.out.println("An error occurred: " + e.getMessage());
+        }
+        finally
+        {
+            System.out.println();
+            System.out.println("You have successfully enter your debit information!");
+            System.out.println("Returning to Home Page...");
         }
     }
 
@@ -259,28 +270,36 @@ public class AccountingLedgerApp
             System.out.println("P) Payments");
             System.out.println("R) Reports");
             System.out.println("H) Home Screen");
+            System.out.print("Enter: ");
             String respond = scanner.nextLine();
 
-            switch (respond)
+            switch (respond.toUpperCase())
             {
                 case "A" ->
                 {
-                    //
+                    System.out.println("Displaying all entries...");
+                    ArrayList<Account> accounts = loadTransactions();
+                    for ( var account : accounts)
+                    {
+                        System.out.println(account);
+                    }
 
                 }
                 case "D" ->
                 {
-                    //prompt user for debit information and save to csv
+                    System.out.println("Displaying your deposit information...");
+                    showDeposits();
                 }
                 case "P" ->
                 {
-                    //Display the ledger screen
+                    System.out.println("Displaying your payment information...");
+                    showPayments();
                 }
                 case "R" ->
                 {
-                    System.out.println();
-                    //go to Reports;
-
+                    System.out.println("Displaying reports. Please hold...");
+                    showReports();
+                    return;
                 }
                 case "H" ->
                 {
@@ -293,7 +312,34 @@ public class AccountingLedgerApp
 
     }
 
-    public void Reports()
+    public void  showDeposits()
+    {
+        //display information from addDeposits from csv file
+        //should only display the positive amount
+        ArrayList<Account> accounts = loadTransactions();
+        for (var account : accounts)
+        {
+            if(account.getAmount() > 0)
+            {
+                System.out.println(account);
+            }
+        }
+
+    }
+    public void showPayments()
+    {
+        //display information input from addPayments from csv file
+        //should only display the negative amount
+        ArrayList<Account> accounts = loadTransactions();
+        for (var account : accounts)
+        {
+            if (account.getAmount() <0)
+            {
+                System.out.println(account);
+            }
+        }
+    }
+    public void showReports()
     {
         //allow use to run pre-defined reports or to run a custom search
         //month to date
