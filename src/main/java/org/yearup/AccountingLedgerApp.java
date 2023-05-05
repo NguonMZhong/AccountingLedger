@@ -1,7 +1,6 @@
 package org.yearup;
 
 import java.io.*;
-import java.sql.SQLOutput;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.chrono.ChronoLocalDate;
@@ -289,8 +288,6 @@ public class AccountingLedgerApp
 
     public void  showDeposits()
     {
-        //display information from addDeposits from csv file
-        //should only display the positive amount
         ArrayList<Account> accounts = loadTransactions();
         for (var account : accounts)
         {
@@ -376,14 +373,11 @@ public class AccountingLedgerApp
         //Load transaction from csv file
         ArrayList<Account> accounts = loadTransactions();
 
-        //filter transaction from current month
         LocalDate now = LocalDate.now();
         for (var account : accounts)
         {
-            //if the date is within this month print it to the console from transaction file.
             if (account.getDate().getMonth() == now.getMonth())
             {
-                //load the transaction with all the current date of this month
                 System.out.println(account);
             }
         }
@@ -395,12 +389,10 @@ public class AccountingLedgerApp
 
         ArrayList<Account> accounts = loadTransactions();
 
-        // Get the current date and calculate the start and end dates of the previous month
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfPreviousMonth = today.minusMonths(1).withDayOfMonth(1);
         LocalDate lastDayOfPreviousMonth = today.minusMonths(1).withDayOfMonth(today.minusMonths(1).lengthOfMonth());
 
-        // Filter transactions for the previous month
         for (Account account : accounts) {
             LocalDate transactionDate = account.getDate();
             if (transactionDate.isAfter(ChronoLocalDate.from(firstDayOfPreviousMonth.atStartOfDay()))
@@ -419,7 +411,6 @@ public class AccountingLedgerApp
         LocalDate today = LocalDate.now();
         int currentYear = today.getYear();
 
-        //filter transactions made this year
         for (var account : accounts)
         {
             LocalDate transactionDate = account.getDate();
@@ -438,8 +429,7 @@ public class AccountingLedgerApp
         LocalDate today = LocalDate.now();
         LocalDate firstDayOfPreviousYear = today.minusYears(1).withDayOfYear(1);
         LocalDate lastDayOfPreviousYear = today.minusYears(1).withDayOfYear(today.minusYears(1).lengthOfYear());
-
-        //filter transactions made this year
+        
         for (var account : accounts)
         {
             LocalDate previousYearDate = account.getDate();
