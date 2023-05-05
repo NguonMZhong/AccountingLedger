@@ -1,9 +1,11 @@
 date|time|description|vendor|amount
 2023-04-15|10:13:25|ergonomic keyboard|Amazon|-89.50
 2023-04-15|11:15:00|Invoice 1001 paid|Joe|1500.00
-
-
-2023-05-03|02:30:43|mousepad|Amazon|180.00
-2023-05-03|02:31:18|Invoice|Nancy|-200.00
-2023-05-03|03:07:17|keypad|BestBuy|30.00
-2023-05-03|03:07:42|checking|BestBuy|-40.00
+2022-03-03|10:10:28|Towne Direct Deposit|Adam|1000
+2022-03-04|11:09:14|Money Tree|Lowe's|-80
+2023-05-04|10:10:28|Towne Direct Deposit|Adam|150.00
+2020-04-01|09:10:12|Garden shovel|Home Depot|-200
+2019-10-09|08:10:12|Union Direct Deposit|Ali|600
+2019-12-12|12:08:30|Mower|Home Depot|-1000
+2023-05-04|09:43:32|UniForce Direct Deposit|Ken|500.00
+2023-05-04|09:44:31|Bug Spray|Lowe's|-30.00

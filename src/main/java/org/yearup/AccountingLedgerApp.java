@@ -1,32 +1,26 @@
 package org.yearup;
 
 import java.io.*;
+import java.sql.SQLOutput;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.chrono.ChronoLocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class AccountingLedgerApp
 {
-    //Global variables
     static public Scanner scanner = new Scanner(System.in);
-
-    //change this into ArrayList vs hashMap for easier access to data
     public void run()
     {
         homeScreen();
 
     }
-
     public static ArrayList<Account> loadTransactions()
     {
         //create the arrays
         ArrayList<Account> accounts = new ArrayList<>();
-
-        //load the array
-        //FileInputStream stream;
-        //Scanner fileScanner = null;
 
         try (Scanner scanner = new Scanner(new File("transactions.csv"))) {
             scanner.nextLine(); // skip header row
@@ -57,15 +51,7 @@ public class AccountingLedgerApp
         } catch (FileNotFoundException e) {
             System.out.println("Error: Could not open file: " + e.getMessage());
         }
-        /*// Print loaded accounts to console
-        for (var account : accounts) {
-            System.out.println(account);
-        }
-
-         */
         return accounts;
-
-
     }
 
     public void homeScreen()
@@ -73,6 +59,7 @@ public class AccountingLedgerApp
         while (true)
         {
             System.out.println();
+            System.out.println("~ Home Screen ~\n");
             System.out.println("Please selection an option below.");
             System.out.println("D) Add Deposit");
             System.out.println("P) Make Payment (Debit)");
@@ -80,6 +67,7 @@ public class AccountingLedgerApp
             System.out.println("X) Exit");
             System.out.print("Enter: ");
             String respond = scanner.nextLine();
+            System.out.println();
 
             switch (respond.toUpperCase())
             {
@@ -131,11 +119,6 @@ public class AccountingLedgerApp
             System.out.print("Enter vendor: ");
             String vendor = scanner.nextLine();
 
-            // Consume the remaining newline character
-            //scanner.nextLine();
-
-            //log as negative number for payment
-
             double amount = 0;
             boolean validAmount = false;
 
@@ -151,11 +134,8 @@ public class AccountingLedgerApp
                 }
             }
 
-
-            //create Account Object
             var accounts = new Account(date, time, description, vendor, amount);
 
-            //Create ArrayList to hold Account objects
             ArrayList<Account> accountList = new ArrayList<>();
 
             accountList.add(accounts);
@@ -171,7 +151,7 @@ public class AccountingLedgerApp
         }
         catch (Exception e)
         {
-            System.out.println("An error occured: " + e.getMessage());
+            System.out.println("An error occurred: " + e.getMessage());
         }
 
         finally
@@ -184,12 +164,10 @@ public class AccountingLedgerApp
 
     public void addPayment()
     {
-        boolean inputError = false;
+        //boolean inputError = false;
 
         try
         {
-            //Scanner input = new Scanner(System.in);
-
             System.out.println();
             System.out.println("Please enter your debit information.");
 
@@ -199,22 +177,17 @@ public class AccountingLedgerApp
             System.out.println("Deposit date: " + date);
             System.out.println("Deposit time: " + time);
 
-            System.out.print("Enter a description or reason for the debit: ");
+            System.out.print("Enter a description: ");
             String description = scanner.nextLine();
 
             System.out.print("Enter vendor: ");
             String vendor = scanner.nextLine();
 
-            // Consume the remaining newline character
-            //scanner.nextLine();
-
-            //log as negative number for payment
-
             double amount = 0;
             boolean validAmount = false;
 
             while (!validAmount) {
-                System.out.println("Enter debit amount: ");
+                System.out.print("Enter amount: ");
                 amount = scanner.nextDouble();
                 scanner.nextLine();
 
@@ -265,13 +238,14 @@ public class AccountingLedgerApp
         {
             System.out.println();
             System.out.println("Please select a ledger option below.");
-            System.out.println("A) All (Display all entries.");
+            System.out.println("A) All (Display all entries)");
             System.out.println("D) Deposits");
             System.out.println("P) Payments");
             System.out.println("R) Reports");
             System.out.println("H) Home Screen");
             System.out.print("Enter: ");
             String respond = scanner.nextLine();
+            System.out.println();
 
             switch (respond.toUpperCase())
             {
@@ -283,23 +257,24 @@ public class AccountingLedgerApp
                     {
                         System.out.println(account);
                     }
-
                 }
                 case "D" ->
                 {
                     System.out.println("Displaying your deposit information...");
                     showDeposits();
+                    break;
                 }
                 case "P" ->
                 {
                     System.out.println("Displaying your payment information...");
                     showPayments();
+                    break;
                 }
                 case "R" ->
                 {
                     System.out.println("Displaying reports. Please hold...");
                     showReports();
-                    return;
+                    break;
                 }
                 case "H" ->
                 {
@@ -328,8 +303,6 @@ public class AccountingLedgerApp
     }
     public void showPayments()
     {
-        //display information input from addPayments from csv file
-        //should only display the negative amount
         ArrayList<Account> accounts = loadTransactions();
         for (var account : accounts)
         {
@@ -341,9 +314,6 @@ public class AccountingLedgerApp
     }
     public void showReports()
     {
-        //allow use to run pre-defined reports or to run a custom search
-        //month to date
-        //previous month
         while (true)
 
         {
@@ -355,37 +325,157 @@ public class AccountingLedgerApp
             System.out.println("3) Year to Date");
             System.out.println("4) Previous Year");
             System.out.println("5) Search by Vendor");
+            System.out.println("0) Back");
+            System.out.print("Enter: ");
             int reply = scanner.nextInt();
+            System.out.println();
 
             switch (reply)
             {
                 case 1 ->
                 {
-                    //
+                    monthToDate();
 
                 }
                 case 2 ->
                 {
-                    //prompt user for debit information and save to csv
+                    previousMonth();
+                    break;
                 }
                 case 3 ->
                 {
-                    //Display the ledger screen
+                    yearToDate();
+                    break;
+
                 }
                 case 4 ->
                 {
-                    System.out.println();
-                    //go to Reports;
-
+                    previousYear();
+                    break;
                 }
                 case 5 ->
                 {
+                    searchByVendor();
+                    break;
+                }
+                case 0 ->
+                {
                     System.out.println("Returning to home page...");
-                    return;
+                    scanner.nextLine();
+                    homeScreen();
                 }
                 default -> System.out.println("Invalid option. Please try again.\n");
             }
         }
+
+    }
+    private void monthToDate()
+    {
+        System.out.println();
+        System.out.println("Month to Date report \n");
+        //Load transaction from csv file
+        ArrayList<Account> accounts = loadTransactions();
+
+        //filter transaction from current month
+        LocalDate now = LocalDate.now();
+        for (var account : accounts)
+        {
+            //if the date is within this month print it to the console from transaction file.
+            if (account.getDate().getMonth() == now.getMonth())
+            {
+                //load the transaction with all the current date of this month
+                System.out.println(account);
+            }
+        }
+
+    }
+    public void previousMonth()
+    {
+        System.out.println("Previous Month Report \n");
+
+        ArrayList<Account> accounts = loadTransactions();
+
+        // Get the current date and calculate the start and end dates of the previous month
+        LocalDate today = LocalDate.now();
+        LocalDate firstDayOfPreviousMonth = today.minusMonths(1).withDayOfMonth(1);
+        LocalDate lastDayOfPreviousMonth = today.minusMonths(1).withDayOfMonth(today.minusMonths(1).lengthOfMonth());
+
+        // Filter transactions for the previous month
+        for (Account account : accounts) {
+            LocalDate transactionDate = account.getDate();
+            if (transactionDate.isAfter(ChronoLocalDate.from(firstDayOfPreviousMonth.atStartOfDay()))
+                    && transactionDate.isBefore(ChronoLocalDate.from(lastDayOfPreviousMonth.plusDays(1).atStartOfDay()))) {
+                System.out.println(account);
+            }
+        }
+
+    }
+    public void yearToDate()
+    {
+        System.out.println("List of transaction made this year. \n");
+
+        ArrayList<Account> accounts = loadTransactions();
+
+        LocalDate today = LocalDate.now();
+        int currentYear = today.getYear();
+
+        //filter transactions made this year
+        for (var account : accounts)
+        {
+            LocalDate transactionDate = account.getDate();
+            if (transactionDate.getYear() == currentYear)
+            {
+                System.out.println(account);
+            }
+        }
+    }
+    public void previousYear()
+    {
+        System.out.println("List of transaction made in the previous years. \n");
+
+        ArrayList<Account> accounts = loadTransactions();
+
+        LocalDate today = LocalDate.now();
+        LocalDate firstDayOfPreviousYear = today.minusYears(1).withDayOfYear(1);
+        LocalDate lastDayOfPreviousYear = today.minusYears(1).withDayOfYear(today.minusYears(1).lengthOfYear());
+
+        //filter transactions made this year
+        for (var account : accounts)
+        {
+            LocalDate previousYearDate = account.getDate();
+            if (previousYearDate.isBefore(ChronoLocalDate.from(firstDayOfPreviousYear.atStartOfDay()))
+                    && previousYearDate.isBefore(ChronoLocalDate.from(lastDayOfPreviousYear.plusDays(1).atStartOfDay())))
+            {
+                System.out.println(account);
+            }
+        }
+
+    }
+    public void searchByVendor()
+    {
+        System.out.println();
+        System.out.println("Enter the vendor you wish to search for.\n");
+        System.out.print("Enter: ");
+        scanner.nextLine();
+        String searchVendor = scanner.nextLine();
+
+        ArrayList<Account> accounts = loadTransactions();
+        boolean matchFound = false;
+
+        for (var account : accounts)
+        {
+            if (account.getVendor().equalsIgnoreCase(searchVendor))
+            {
+                System.out.println(account);
+                matchFound = true;
+            }
+        }
+
+        if (!matchFound)
+        {
+            System.out.println("No transactions found for vendor " + searchVendor);
+        }
+
 
     }
 
